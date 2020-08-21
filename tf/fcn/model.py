@@ -23,52 +23,29 @@ def FCN_model(len_classes=2, dropout_rate=0.2):
 
     x = tf.keras.layers.MaxPooling2D()(x)
 
-    x = tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=2, padding="same")(x)
+    x = tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, padding="same")(x)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
 
-    #x = tf.keras.layers.MaxPooling2D()(x)
+    x = tf.keras.layers.MaxPooling2D()(x)
 
-    x = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=2, padding="same")(x)
+    x = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=1, padding="same")(x)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
 
-    # x = tf.keras.layers.MaxPooling2D()(x)
+    x = tf.keras.layers.MaxPooling2D()(x)
 
-    x = tf.keras.layers.Conv2D(filters=512, kernel_size=3, strides=2, padding="same")(x)
+    x = tf.keras.layers.Conv2D(filters=512, kernel_size=3, strides=1, padding="same")(x)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
 
-    # Uncomment the below line if you're using dense layers
-    # x = tf.keras.layers.GlobalMaxPooling2D()(x)
-
-    # Fully connected layer 1
-    # x = tf.keras.layers.Dropout(dropout_rate)(x)
-    # x = tf.keras.layers.BatchNormalization()(x)
-    # x = tf.keras.layers.Dense(units=64)(x)
-    # x = tf.keras.layers.Activation('relu')(x)
-
-    # Fully connected layer 1
-    # x = tf.keras.layers.Conv2D(filters=64, kernel_size=1, strides=1)(x)
-    # x = tf.keras.layers.Dropout(dropout_rate)(x)
-    # x = tf.keras.layers.BatchNormalization()(x)
-    # x = tf.keras.layers.Activation('relu')(x)
-
-    # Fully connected layer 2
-    # x = tf.keras.layers.Dropout(dropout_rate)(x)
-    # x = tf.keras.layers.BatchNormalization()(x)
-    # x = tf.keras.layers.Dense(units=len_classes)(x)
-    # predictions = tf.keras.layers.Activation('softmax')(x)
-
-    # Fully connected layer 2
-    # x = tf.keras.layers.Conv2D(filters=len_classes, kernel_size=1, strides=1)(x)
-    # x = tf.keras.layers.Dropout(dropout_rate)(x)
-    # x = tf.keras.layers.BatchNormalization()(x)
-    #x = tf.keras.layers.GlobalMaxPooling2D()(x)
-    x = tf.keras.layers.Conv2DTranspose(32, (2, 2), strides=(32, 32), padding='same')(x)
+    x = tf.keras.layers.Conv2DTranspose(256, 3, strides=2, padding='same')(x)
+    x = tf.keras.layers.Conv2DTranspose(128, 3, strides=2, padding='same')(x)
+    x = tf.keras.layers.Conv2DTranspose(64, 3, strides=2, padding='same')(x)
+    x = tf.keras.layers.Conv2DTranspose(32, 3, strides=2, padding='same')(x)
     predictions = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid')(x)
     model = tf.keras.Model(inputs=input, outputs=predictions)
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
