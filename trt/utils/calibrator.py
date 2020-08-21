@@ -17,8 +17,8 @@ class EntropyCalibrator(trt.IInt8EntropyCalibrator2):
         # you MUST call the constructor of the parent explicitly.
         trt.IInt8EntropyCalibrator2.__init__(self)
 
-        self.num_calib_imgs = 1000 # the number of images from the dataset to use for calibration
-        self.batch_size = 8
+        self.num_calib_imgs = 100 # the number of images from the dataset to use for calibration
+        self.batch_size = 1
         self.batch_shape = (self.batch_size, IMG_CH, IMG_H, IMG_W)
         self.cache_file = cache_file
 

@@ -1,7 +1,12 @@
 #! /bin/bash
 
-sudo /usr/local/cuda-10.0/bin/nvprof -o int8.nvvp -f /usr/src/tensorrt/bin/trtexec --loadEngine=int8.engine --iterations=20 --batch=1
+TRTEXEC=/usr/src/tensorrt/bin/trtexec
+TRTEXEC=/home/landingai/TensorRT-5.1.5.0/bin/trtexec
 
-sudo /usr/local/cuda-10.0/bin/nvprof -o fp16.nvvp -f /usr/src/tensorrt/bin/trtexec --loadEngine=fp16.engine --iterations=20 --batch=1
+NUM_ITER=100
 
-sudo /usr/local/cuda-10.0/bin/nvprof -o fp32.nvvp -f /usr/src/tensorrt/bin/trtexec --loadEngine=fp32.engine --iterations=20 --batch=1
+/usr/local/cuda-10.0/bin/nvprof -o int8.nvvp -f $TRTEXEC --loadEngine=int8.engine --iterations=$NUM_ITER --batch=1
+
+/usr/local/cuda-10.0/bin/nvprof -o fp16.nvvp -f $TRTEXEC --loadEngine=fp16.engine --iterations=$NUM_ITER --batch=1
+
+/usr/local/cuda-10.0/bin/nvprof -o fp32.nvvp -f $TRTEXEC --loadEngine=fp32.engine --iterations=$NUM_ITER --batch=1
