@@ -35,15 +35,39 @@ def FCN_model(len_classes=2, dropout_rate=0.2):
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
-    x = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(x)
-    x = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same')(x)
+
+    pool_3 = tf.keras.layers.MaxPooling2D()(x)
+    #32
+    x = tf.keras.layers.Conv2D(filters=16, kernel_size=3, strides=1, padding="same")(pool_3)
+    x = tf.keras.layers.Dropout(dropout_rate)(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Activation('relu')(x)
+
+    pool_4 = tf.keras.layers.MaxPooling2D()(x)
+    #16
+    x = tf.keras.layers.Conv2D(filters=16, kernel_size=3, strides=1, padding="same")(pool_4)
+    x = tf.keras.layers.Dropout(dropout_rate)(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Activation('relu')(x)
+    #x = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(x)
+    x = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same', activation='relu')(x)
+
+    score_pool_3 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_3)
+
+    fuse_3 = tf.keras.layers.Add()([x, score_pool_3])
+    x = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same')(fuse_3)
+
+    score_pool_2 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_2)
+    fuse_2 = tf.keras.layers.Add()([x, score_pool_2])
+    x = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same')(fuse_2)
     
     score_pool_1 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_1)
     fuse_1 = tf.keras.layers.Add()([x, score_pool_1])
     x = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same')(fuse_1)
+
     score_pool_0 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_0)
-    fuse_2 = tf.keras.layers.Add()([x, score_pool_0])
-    predictions = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same', activation='sigmoid')(fuse_2)
+    fuse_0 = tf.keras.layers.Add()([x, score_pool_0])
+    predictions = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same', activation='sigmoid')(fuse_0)
     
     model = tf.keras.Model(inputs=input, outputs=predictions)
     print(model.summary())
