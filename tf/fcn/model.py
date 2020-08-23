@@ -6,52 +6,47 @@ import os
 import shutil
 
 def FCN_model(len_classes=2, dropout_rate=0.2):
-    
+
+    dropout_rate=0.2
     input = tf.keras.layers.Input(shape=(512, 512, 3))
-
-    x = tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=1, padding="same")(input)
+    
+    x = tf.keras.layers.Conv2D(filters=16, kernel_size=3, strides=1, padding="same")(input)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
-
-    x = tf.keras.layers.MaxPooling2D()(x)
-
-    x = tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, padding="same")(x)
+    
+    pool_0 = tf.keras.layers.MaxPooling2D()(x)
+    #256
+    x = tf.keras.layers.Conv2D(filters=16, kernel_size=3, strides=1, padding="same")(pool_0)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
-
-    x = tf.keras.layers.MaxPooling2D()(x)
-
-    x = tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, padding="same")(x)
+    
+    pool_1 = tf.keras.layers.MaxPooling2D()(x)
+    #128
+    x = tf.keras.layers.Conv2D(filters=16, kernel_size=3, strides=1, padding="same")(pool_1)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
-
-    x = tf.keras.layers.MaxPooling2D()(x)
-
-    x = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=1, padding="same")(x)
+    
+    pool_2 = tf.keras.layers.MaxPooling2D()(x)
+    #64
+    x = tf.keras.layers.Conv2D(filters=16, kernel_size=3, strides=1, padding="same")(pool_2)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
-
-    x = tf.keras.layers.MaxPooling2D()(x)
-
-    x = tf.keras.layers.Conv2D(filters=512, kernel_size=3, strides=1, padding="same")(x)
-    x = tf.keras.layers.Dropout(dropout_rate)(x)
-    x = tf.keras.layers.BatchNormalization()(x)
-    x = tf.keras.layers.Activation('relu')(x)
-
-    x = tf.keras.layers.Conv2DTranspose(256, 3, strides=2, padding='same')(x)
-    x = tf.keras.layers.Conv2DTranspose(128, 3, strides=2, padding='same')(x)
-    x = tf.keras.layers.Conv2DTranspose(64, 3, strides=2, padding='same')(x)
-    x = tf.keras.layers.Conv2DTranspose(32, 3, strides=2, padding='same')(x)
-    predictions = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid')(x)
+    x = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(x)
+    x = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same')(x)
+    
+    score_pool_1 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_1)
+    fuse_1 = tf.keras.layers.Add()([x, score_pool_1])
+    x = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same')(fuse_1)
+    score_pool_0 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_0)
+    fuse_2 = tf.keras.layers.Add()([x, score_pool_0])
+    predictions = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same', activation='sigmoid')(fuse_2)
+    
     model = tf.keras.Model(inputs=input, outputs=predictions)
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     print(model.summary())
-    print(f'Total number of layers: {len(model.layers)}')
-
     return model
 
 def save_v2(model):
@@ -85,6 +80,7 @@ if __name__ == "__main__":
     config.gpu_options.per_process_gpu_memory_fraction = 0.8
     tf.keras.backend.set_session(tf.Session(config=config));
     model = FCN_model(len_classes=1, dropout_rate=0.2)
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     dataset = SegmentationDataset(size = 512, block_size = 64)
     x_train, y_train = dataset.get_data(8)
     x_val, y_val = dataset.get_data(4)
