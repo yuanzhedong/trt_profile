@@ -10,62 +10,64 @@ def FCN_model(len_classes=2, dropout_rate=0.2):
     dropout_rate=0.2
     input = tf.keras.layers.Input(shape=(512, 512, 3))
     
-    x = tf.keras.layers.Conv2D(filters=16, kernel_size=3, strides=1, padding="same")(input)
+    x = tf.keras.layers.Conv2D(filters=8, kernel_size=3, strides=1, padding="same")(input)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
     
     pool_0 = tf.keras.layers.MaxPooling2D()(x)
     #256
-    x = tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=1, padding="same")(pool_0)
+    x = tf.keras.layers.Conv2D(filters=16, kernel_size=3, strides=1, padding="same")(pool_0)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
     
     pool_1 = tf.keras.layers.MaxPooling2D()(x)
     #128
-    x = tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, padding="same")(pool_1)
+    x = tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=1, padding="same")(pool_1)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
     
     pool_2 = tf.keras.layers.MaxPooling2D()(x)
     #64
-    x = tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, padding="same")(pool_2)
+    x = tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, padding="same")(pool_2)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
 
     pool_3 = tf.keras.layers.MaxPooling2D()(x)
     #32
-    x = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=1, padding="same")(pool_3)
+    x = tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, padding="same")(pool_3)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
 
     pool_4 = tf.keras.layers.MaxPooling2D()(x)
     #16
-    x = tf.keras.layers.Conv2D(filters=512, kernel_size=3, strides=1, padding="same")(pool_4)
+    x = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=1, padding="same")(pool_4)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
 
-    x = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same', activation='relu')(x)
+    x = tf.keras.layers.Conv2DTranspose(128, 3, strides=2, padding='same', activation='relu')(x)
 
-    score_pool_3 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_3)
+    print(x.shape)
+    print(pool_3.shape)
+    #score_pool_3 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_3)
 
     fuse_3 = tf.keras.layers.concatenate([x, score_pool_3])
-    x = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same')(fuse_3)
+    x = tf.keras.layers.Conv2DTranspose(64, 3, strides=2, padding='same')(fuse_3)
 
-    score_pool_2 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_2)
+    #score_pool_2 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_2)
     fuse_2 = tf.keras.layers.concatenate([x, score_pool_2])
     x = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same')(fuse_2)
     
-    score_pool_1 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_1)
+    #score_pool_1 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_1)
     fuse_1 = tf.keras.layers.concatenate([x, score_pool_1])
-    x = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same')(fuse_1)
+    x = tf.keras.layers.Conv2DTranspose(32, 3, strides=2, padding='same')(fuse_1)
 
-    score_pool_0 = tf.keras.layers.Conv2D(1, (1, 1), activation='relu')(pool_0)
+    score_pool_0 = tf.keras.layers.Conv2D(16, (1, 1), activation='relu')(pool_0)
     fuse_0 = tf.keras.layers.concatenate([x, score_pool_0])
     
     predictions = tf.keras.layers.Conv2DTranspose(1, 3, strides=2, padding='same', activation='sigmoid')(fuse_0)
